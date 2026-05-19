@@ -111,21 +111,31 @@ export const getSharedDocumentsWithDetails = query({
     });
 
     // Fetch document details for each share
-    const documentsWithShareInfo = await Promise.all(
-      activeShares.map(async (share) => {
-        const document = await ctx.db.get(share.documentId);
-        if (!document) return null;
-        
-        return {
-          ...document,
+    const results = [];
+    for (const share of activeShares) {
+      const document = await ctx.db.get(share.documentId);
+      if (document) {
+        results.push({
+          _id: document._id,
+          _creationTime: document._creationTime,
+          userId: document.userId,
+          title: document.title,
+          issuer: document.issuer,
+          description: document.description,
+          documentType: document.documentType,
+          fileHash: document.fileHash,
+          hederaSequence: document.hederaSequence,
+          topicId: document.topicId,
+          status: document.status,
+          expiresAt: document.expiresAt,
+          storageId: document.storageId,
           sharePermission: share.permission,
           shareExpiresAt: share.expiresAt,
           sharedBy: share.ownerUserId,
-        };
-      })
-    );
+        });
+      }
+    }
 
-    // Filter out any null results (deleted documents)
-    return documentsWithShareInfo.filter((doc) => doc !== null);
+    return results;
   },
 });
