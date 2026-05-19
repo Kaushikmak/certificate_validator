@@ -25,6 +25,8 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [issuer, setIssuer] = useState("");
   const [description, setDescription] = useState("");
+  const [documentType, setDocumentType] = useState("certificate");
+  const [expiresAt, setExpiresAt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
@@ -110,6 +112,10 @@ export default function Home() {
     formData.append("title", title);
     formData.append("issuer", issuer);
     formData.append("description", description);
+    formData.append("documentType", documentType);
+    if (expiresAt) {
+      formData.append("expiresAt", expiresAt);
+    }
 
     try {
       const response = await fetch("/api/issue", {
@@ -122,7 +128,7 @@ export default function Home() {
 
       setResult(data);
       if (!data.exists) {
-        setFile(null); setTitle(""); setIssuer(""); setDescription("");
+        setFile(null); setTitle(""); setIssuer(""); setDescription(""); setDocumentType("certificate"); setExpiresAt("");
       }
     } catch (error: any) {
       setResult({ error: error.message });
@@ -262,6 +268,29 @@ export default function Home() {
                   <div className="space-y-3">
                     <Label htmlFor="issuer" className="text-black font-bold uppercase tracking-wider text-xs">Issuer Name *</Label>
                     <Input id="issuer" value={issuer} onChange={(e) => setIssuer(e.target.value)} placeholder="e.g., HR Department" className="bg-white border-black border-2 focus-visible:ring-0 focus-visible:border-black focus-visible:outline-none rounded-none h-12 text-base" required />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label htmlFor="documentType" className="text-black font-bold uppercase tracking-wider text-xs">Document Type *</Label>
+                    <select
+                      id="documentType"
+                      value={documentType}
+                      onChange={(e) => setDocumentType(e.target.value)}
+                      className="w-full bg-white border-black border-2 rounded-none h-12 px-3 text-base"
+                    >
+                      <option value="certificate">Certificate</option>
+                      <option value="license">License</option>
+                      <option value="transcript">Transcript</option>
+                      <option value="report">Report</option>
+                      <option value="contract">Contract</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="expiresAt" className="text-black font-bold uppercase tracking-wider text-xs">Expiry Date</Label>
+                    <Input id="expiresAt" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="bg-white border-black border-2 rounded-none h-12 text-base" />
                   </div>
                 </div>
 

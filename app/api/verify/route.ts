@@ -30,6 +30,22 @@ export async function POST(request: Request) {
         message: "Verification Failed. This document hash does not exist on the ledger. It may have been tampered with or was never registered.",
       });
     }
+    const isExpired = !!document.expiresAt && document.expiresAt < Date.now();
+    if (isExpired) {
+      return NextResponse.json({
+        verified: false,
+        message: "Verification Failed. This document exists on the ledger but is expired.",
+        documentDetails: {
+          title: document.title,
+          issuer: document.issuer,
+          sequence: document.hederaSequence,
+          topicId: document.topicId,
+          timestamp: document._creationTime,
+          documentType: document.documentType,
+          expiresAt: document.expiresAt,
+        },
+      });
+    }
 
     return NextResponse.json({
       verified: true,
@@ -39,6 +55,8 @@ export async function POST(request: Request) {
         sequence: document.hederaSequence,
         topicId: document.topicId,
         timestamp: document._creationTime, // Using Convex native creation timestamp
+        documentType: document.documentType,
+        expiresAt: document.expiresAt ?? null,
       },
     });
 

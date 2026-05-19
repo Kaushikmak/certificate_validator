@@ -8,8 +8,13 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
+import type * as apiKeys from "../apiKeys.js";
+import type * as audit from "../audit.js";
 import type * as documents from "../documents.js";
+import type * as files from "../files.js";
 import type * as hedera from "../hedera.js";
+import type * as shares from "../shares.js";
 import type * as users from "../users.js";
 
 import type {
@@ -19,8 +24,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
+  apiKeys: typeof apiKeys;
+  audit: typeof audit;
   documents: typeof documents;
+  files: typeof files;
   hedera: typeof hedera;
+  shares: typeof shares;
   users: typeof users;
 }>;
 

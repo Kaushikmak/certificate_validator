@@ -122,9 +122,19 @@ export default function VerifyPage() {
                     <span className="sm:col-span-2">{result.documentDetails.issuer}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-black/20 pb-4">
+                    <span className="font-bold uppercase tracking-wider text-xs text-black/60">Type:</span>
+                    <span className="sm:col-span-2 uppercase">{result.documentDetails.documentType}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-black/20 pb-4">
                     <span className="font-bold uppercase tracking-wider text-xs text-black/60">Timestamp:</span>
                     <span className="sm:col-span-2">{new Date(result.documentDetails.timestamp).toLocaleString()}</span>
                   </div>
+                  {result.documentDetails.expiresAt && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-black/20 pb-4">
+                      <span className="font-bold uppercase tracking-wider text-xs text-black/60">Expires:</span>
+                      <span className="sm:col-span-2">{new Date(result.documentDetails.expiresAt).toLocaleDateString()}</span>
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <span className="font-bold uppercase tracking-wider text-xs text-black/60">Hedera Seq:</span>
                     <span className="sm:col-span-2 font-mono font-bold">{result.documentDetails.sequence}</span>

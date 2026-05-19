@@ -24,9 +24,15 @@ export async function POST(request: Request) {
     const title = formData.get("title") as string;
     const issuer = formData.get("issuer") as string;
     const description = formData.get("description") as string;
+    const documentType = (formData.get("documentType") as string) || "certificate";
+    const expiresAtInput = (formData.get("expiresAt") as string) || "";
 
     if (!file || !title || !issuer) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    const expiresAt = expiresAtInput ? new Date(expiresAtInput).getTime() : undefined;
+    if (expiresAtInput && Number.isNaN(expiresAt)) {
+      return NextResponse.json({ error: "Invalid expiry date." }, { status: 400 });
     }
 
     // 2. Hash the file locally on the server
@@ -54,11 +60,26 @@ export async function POST(request: Request) {
       title,
       issuer,
       description: description || "",
+      documentType,
+      expiresAt,
       fileHash,
       topicId: topicId
     });
 
-    return NextResponse.json(result);
+    // 5. Persist PDF in Convex storage (Phase 2).
+    // Node actions in Convex have argument limits; we keep a conservative ceiling.
+    let fileStored = false;
+    if (file.size <= 4_500_000) {
+      await convex.action(api.files.storePdfForDocument, {
+        documentId: result.document.id as any,
+        ownerUserId: session.user.id,
+        bytes: arrayBuffer,
+        contentType: file.type || "application/pdf",
+      });
+      fileStored = true;
+    }
+
+    return NextResponse.json({ ...result, fileStored });
 
   } catch (error: any) {
     console.error("Issuance Error:", error);

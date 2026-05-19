@@ -8,15 +8,13 @@ import { Client, PrivateKey, AccountCreateTransaction, Hbar, TopicMessageSubmitT
 
 export const provisionUserAccount = action({
   args: { email: v.string(), name: v.string() },
-  // FIX: Explicitly declared the return type to break the circular TS dependency
   handler: async (ctx, args): Promise<{ success: boolean; message: string; accountId: string }> => {
-    // 1. Check if user already exists
+
     const existingUser: any = await ctx.runQuery(api.users.getUserInfo, { email: args.email });
     if (existingUser?.hederaAccountId) {
       return { success: true, message: "Account exists", accountId: existingUser.hederaAccountId };
     }
 
-    // 2. Setup Treasury Client
     const treasuryId = process.env.NEXT_PUBLIC_HEDERA_ACCOUNT_ID || process.env.HEDERA_ACCOUNT_ID;
     const treasuryKey = process.env.NEXT_PUBLIC_HEDERA_PRIVATE_KEY || process.env.HEDERA_PRIVATE_KEY;
     
@@ -26,13 +24,11 @@ export const provisionUserAccount = action({
     
     const client = Client.forTestnet().setOperator(treasuryId, treasuryKey);
 
-    // 3. Generate a new Private Key for the user
     const newPrivateKey = PrivateKey.generateED25519();
     const newPublicKey = newPrivateKey.publicKey;
 
-    // 4. Create the Account on the Hedera Network
     const transaction = new AccountCreateTransaction()
-      .setKey(newPublicKey)
+      .setKeyWithoutAlias(newPublicKey)
       .setInitialBalance(new Hbar(10));
 
     const txResponse = await transaction.execute(client);
@@ -58,26 +54,27 @@ export const publishDocument = action({
     title: v.string(),
     issuer: v.string(),
     description: v.string(),
+    documentType: v.string(),
+    expiresAt: v.optional(v.number()),
     fileHash: v.string(),
     topicId: v.string(),
   },
-  // FIX: Explicitly declared the return type to break the circular TS dependency
   handler: async (ctx, args): Promise<{ success: boolean; document: { id: string; hederaSequence: string; topicId: string }; fee: string }> => {
-    // 1. Get the user's private keys securely
+
     const user: any = await ctx.runQuery(internal.users.getInternalUserKeys, { email: args.email });
     
     if (!user || !user.hederaAccountId || !user.hederaPrivateKey) {
       throw new Error("User Hedera account not fully provisioned yet.");
     }
 
-    // 2. Initialize Hedera Client as the USER
     const client = Client.forTestnet().setOperator(user.hederaAccountId, user.hederaPrivateKey);
 
-    // 3. Prepare and send the transaction
     const hederaMessage = JSON.stringify({
       title: args.title,
       issuer: args.issuer,
       description: args.description,
+      documentType: args.documentType,
+      expiresAt: args.expiresAt ?? null,
       hash: args.fileHash,
       timestamp: new Date().toISOString(),
     });
@@ -100,9 +97,11 @@ export const publishDocument = action({
       title: args.title,
       issuer: args.issuer,
       description: args.description,
+      documentType: args.documentType,
       fileHash: args.fileHash,
       hederaSequence: sequenceNumber,
       topicId: args.topicId,
+      expiresAt: args.expiresAt,
     });
 
     return { 
