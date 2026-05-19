@@ -93,3 +93,39 @@ export const listSharedWithEmail = query({
       .take(100);
   },
 });
+
+export const getSharedDocumentsWithDetails = query({
+  args: { recipientEmail: v.string() },
+  handler: async (ctx, args) => {
+    const shares = await ctx.db
+      .query("documentShares")
+      .withIndex("by_recipientEmail", (q) => q.eq("recipientEmail", args.recipientEmail.toLowerCase()))
+      .order("desc")
+      .take(100);
+
+    // Filter out revoked and expired shares
+    const activeShares = shares.filter((share) => {
+      const notRevoked = !share.revokedAt;
+      const notExpired = !share.expiresAt || share.expiresAt > Date.now();
+      return notRevoked && notExpired;
+    });
+
+    // Fetch document details for each share
+    const documentsWithShareInfo = await Promise.all(
+      activeShares.map(async (share) => {
+        const document = await ctx.db.get(share.documentId);
+        if (!document) return null;
+        
+        return {
+          ...document,
+          sharePermission: share.permission,
+          shareExpiresAt: share.expiresAt,
+          sharedBy: share.ownerUserId,
+        };
+      })
+    );
+
+    // Filter out any null results (deleted documents)
+    return documentsWithShareInfo.filter((doc) => doc !== null);
+  },
+});

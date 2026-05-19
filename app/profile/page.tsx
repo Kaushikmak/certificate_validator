@@ -28,6 +28,11 @@ export default function ProfilePage() {
     session?.user?.id ? { userId: session.user.id } : "skip",
   );
 
+  const sharedDocuments = useQuery(
+    api.shares.getSharedDocumentsWithDetails,
+    session?.user?.email ? { recipientEmail: session.user.email } : "skip",
+  );
+
   const [balance, setBalance] = useState<string | null>(null);
   const [busyDocId, setBusyDocId] = useState<string | null>(null);
   const [activeApiKeys, setActiveApiKeys] = useState<any[]>([]);
@@ -591,6 +596,89 @@ export default function ProfilePage() {
                               <button type="button" onClick={() => setShareModalDocId(doc._id)} disabled={busyDocId === doc._id} className="text-xs font-bold uppercase underline underline-offset-4 hover:bg-black hover:text-white px-2 py-1 disabled:opacity-50">Share</button>
                               <button type="button" onClick={() => setRenewModalDocId(doc._id)} disabled={busyDocId === doc._id} className="text-xs font-bold uppercase underline underline-offset-4 hover:bg-black hover:text-white px-2 py-1 disabled:opacity-50">Renew</button>
                               <a href={`https://hashscan.io/testnet/topic/${doc.topicId}?p=${doc.hederaSequence}`} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase underline underline-offset-4 hover:bg-black hover:text-white px-2 py-1">Proof</a>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="border-2 border-black bg-white">
+            <div className="border-b-2 border-black p-6">
+              <h2 className="text-2xl font-bold tracking-tight uppercase">Shared With Me</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-black bg-black/5">
+                    <th className="p-4 font-bold uppercase tracking-wider text-xs whitespace-nowrap">Title</th>
+                    <th className="p-4 font-bold uppercase tracking-wider text-xs whitespace-nowrap">Type</th>
+                    <th className="p-4 font-bold uppercase tracking-wider text-xs whitespace-nowrap">Issuer</th>
+                    <th className="p-4 font-bold uppercase tracking-wider text-xs whitespace-nowrap">Status</th>
+                    <th className="p-4 font-bold uppercase tracking-wider text-xs whitespace-nowrap">Permission</th>
+                    <th className="p-4 font-bold uppercase tracking-wider text-xs whitespace-nowrap text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sharedDocuments === undefined ? (
+                    <>
+                      <tr>
+                        <td className="p-4"><div className="h-4 w-32 animate-pulse bg-black/10" /></td>
+                        <td className="p-4"><div className="h-4 w-20 animate-pulse bg-black/10" /></td>
+                        <td className="p-4"><div className="h-4 w-28 animate-pulse bg-black/10" /></td>
+                        <td className="p-4"><div className="h-4 w-24 animate-pulse bg-black/10" /></td>
+                        <td className="p-4"><div className="h-4 w-20 animate-pulse bg-black/10" /></td>
+                        <td className="p-4"><div className="h-4 w-40 animate-pulse bg-black/10 ml-auto" /></td>
+                      </tr>
+                    </>
+                  ) : sharedDocuments.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center font-bold uppercase tracking-widest text-black/50">No documents shared with you yet.</td>
+                    </tr>
+                  ) : (
+                    sharedDocuments.map((doc: any, idx: number) => {
+                      const isExpired = !!doc.expiresAt && doc.expiresAt < Date.now();
+                      const shareExpired = !!doc.shareExpiresAt && doc.shareExpiresAt < Date.now();
+                      const status = isExpired ? "expired" : doc.status;
+                      const canDownload = doc.sharePermission === "download" && !shareExpired;
+                      
+                      return (
+                        <tr key={doc._id} className={idx !== sharedDocuments.length - 1 ? "border-b border-black/20" : ""}>
+                          <td className="p-4 font-medium">{doc.title}</td>
+                          <td className="p-4 uppercase text-xs font-bold">{doc.documentType}</td>
+                          <td className="p-4">{doc.issuer}</td>
+                          <td className="p-4 uppercase text-xs font-bold">
+                            {status}
+                            {shareExpired && <span className="text-red-600"> · SHARE EXPIRED</span>}
+                            {doc.expiresAt ? ` · ${new Date(doc.expiresAt).toLocaleDateString()}` : ""}
+                          </td>
+                          <td className="p-4 uppercase text-xs font-bold">{doc.sharePermission}</td>
+                          <td className="p-4 text-right">
+                            <div className="flex gap-2 justify-end flex-wrap">
+                              {canDownload ? (
+                                <a 
+                                  href={`/api/documents/${doc._id}/download`} 
+                                  className="text-xs font-bold uppercase underline underline-offset-4 hover:bg-black hover:text-white px-2 py-1"
+                                >
+                                  Download
+                                </a>
+                              ) : (
+                                <span className="text-xs font-bold uppercase text-black/30 px-2 py-1">
+                                  {shareExpired ? "Share Expired" : "View Only"}
+                                </span>
+                              )}
+                              <a 
+                                href={`https://hashscan.io/testnet/topic/${doc.topicId}?p=${doc.hederaSequence}`} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-xs font-bold uppercase underline underline-offset-4 hover:bg-black hover:text-white px-2 py-1"
+                              >
+                                Proof
+                              </a>
                             </div>
                           </td>
                         </tr>
