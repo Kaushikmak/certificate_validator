@@ -198,7 +198,7 @@ export default function Home() {
 
       {/* Navbar */}
       <header className="flex-none h-16 border-b border-black px-6 sm:px-12 flex items-center justify-between bg-white z-20">
-        <div className="font-bold tracking-tight text-xl">TrustStamp</div>
+        <div className="font-bold tracking-tight text-xl"><a href="#">TrustStamp</a></div>
         <nav className="flex items-center gap-4 sm:gap-6">
           <Link href="/verify" className="text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-black hover:text-white px-2 py-1.5 transition-none border-2 border-transparent hover:border-black">
             Verify

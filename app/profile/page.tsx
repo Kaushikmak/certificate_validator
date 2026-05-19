@@ -364,7 +364,7 @@ export default function ProfilePage() {
       )}
 
       <header className="flex-none h-16 border-b border-black px-6 sm:px-12 flex items-center justify-between bg-white z-20">
-        <div className="font-bold tracking-tight text-xl">LedgerVerify</div>
+        <div className="font-bold tracking-tight text-xl">TrustStamp</div>
         <nav>
           <Link href="/" className="text-sm font-medium hover:underline underline-offset-4">
             ← Back to Register

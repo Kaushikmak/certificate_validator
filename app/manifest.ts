@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "LedgerVerify",
-    short_name: "LedgerVerify",
+    name: "TrustStamp",
+    short_name: "TrustStamp",
     description: "Securely notarize and verify documents on Hedera",
     start_url: "/",
     display: "standalone",

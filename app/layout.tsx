@@ -8,7 +8,7 @@ import ServiceWorkerRegister from "./ServiceWorkerRegister";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "LedgerVerify",
+  title: "TrustStamp",
   description: "Securely notarize your PDF on the immutable Hedera Network",
   manifest: "/manifest.webmanifest",
 };

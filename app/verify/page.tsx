@@ -43,7 +43,7 @@ export default function VerifyPage() {
       {/* Minimal Navbar */}
       <header className="flex-none h-16 border-b border-black px-6 sm:px-12 flex items-center justify-between bg-white z-20">
         <div className="font-bold tracking-tight text-xl">
-          LedgerVerify
+          <a href="#">TrustStamp</a>
         </div>
         <nav>
           <Link 
