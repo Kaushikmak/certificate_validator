@@ -640,11 +640,12 @@ export default function ProfilePage() {
                       <td colSpan={6} className="p-8 text-center font-bold uppercase tracking-widest text-black/50">No documents shared with you yet.</td>
                     </tr>
                   ) : (
-                    sharedDocuments.map((doc: any, idx: number) => {
+                    sharedDocuments.map((item: any, idx: number) => {
+                      const doc = item.document;
                       const isExpired = !!doc.expiresAt && doc.expiresAt < Date.now();
-                      const shareExpired = !!doc.shareExpiresAt && doc.shareExpiresAt < Date.now();
+                      const shareExpired = !!item.shareExpiresAt && item.shareExpiresAt < Date.now();
                       const status = isExpired ? "expired" : doc.status;
-                      const canDownload = doc.sharePermission === "download" && !shareExpired;
+                      const canDownload = item.sharePermission === "download" && !shareExpired;
                       
                       return (
                         <tr key={doc._id} className={idx !== sharedDocuments.length - 1 ? "border-b border-black/20" : ""}>
@@ -656,7 +657,7 @@ export default function ProfilePage() {
                             {shareExpired && <span className="text-red-600"> · SHARE EXPIRED</span>}
                             {doc.expiresAt ? ` · ${new Date(doc.expiresAt).toLocaleDateString()}` : ""}
                           </td>
-                          <td className="p-4 uppercase text-xs font-bold">{doc.sharePermission}</td>
+                          <td className="p-4 uppercase text-xs font-bold">{item.sharePermission}</td>
                           <td className="p-4 text-right">
                             <div className="flex gap-2 justify-end flex-wrap">
                               {canDownload ? (

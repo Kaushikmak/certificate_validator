@@ -101,39 +101,24 @@ export const getSharedDocumentsWithDetails = query({
       .query("documentShares")
       .withIndex("by_recipientEmail", (q) => q.eq("recipientEmail", args.recipientEmail.toLowerCase()))
       .order("desc")
-      .take(100);
+      .collect();
 
-    // Filter out revoked and expired shares
-    const activeShares = shares.filter((share) => {
-      const notRevoked = !share.revokedAt;
-      const notExpired = !share.expiresAt || share.expiresAt > Date.now();
-      return notRevoked && notExpired;
-    });
-
-    // Fetch document details for each share
+    // Filter and enrich with document details
     const results = [];
-    for (const share of activeShares) {
+    for (const share of shares) {
+      // Skip revoked or expired shares
+      if (share.revokedAt) continue;
+      if (share.expiresAt && share.expiresAt < Date.now()) continue;
+
       const document = await ctx.db.get(share.documentId);
-      if (document) {
-        results.push({
-          _id: document._id,
-          _creationTime: document._creationTime,
-          userId: document.userId,
-          title: document.title,
-          issuer: document.issuer,
-          description: document.description,
-          documentType: document.documentType,
-          fileHash: document.fileHash,
-          hederaSequence: document.hederaSequence,
-          topicId: document.topicId,
-          status: document.status,
-          expiresAt: document.expiresAt,
-          storageId: document.storageId,
-          sharePermission: share.permission,
-          shareExpiresAt: share.expiresAt,
-          sharedBy: share.ownerUserId,
-        });
-      }
+      if (!document) continue;
+
+      results.push({
+        document,
+        sharePermission: share.permission,
+        shareExpiresAt: share.expiresAt ?? undefined,
+        sharedBy: share.ownerUserId,
+      });
     }
 
     return results;
